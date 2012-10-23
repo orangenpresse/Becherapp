@@ -1,22 +1,44 @@
 var http = require('http');
+var path = require('path');
 var red = 0;
 var green = 0;
 var user = [];
- 
+var fs = require('fs');
+
 http = http.createServer(function (req, res) {
 	res.writeHead(200, {'Content-Type': 'text/plain'});
 });
 
 http.on('request', function(request, response) { 
-	//for(var i = 0; i < user.length; i++) {
-	//	if( user[i].socket == request.socket )
-	//		response.write("Das ist der Client");
-	//}	
-
+	    var filePath = '.' + request.url;
+    if (filePath == './')
+        filePath = './index.htm';
+     
+    path.exists(filePath, function(exists) {
+     
+        if (exists) {
+            fs.readFile(filePath, function(error, content) {
+                if (error) {
+                    response.writeHead(500);
+                    response.end();
+                }
+                else {
+		    parseUrl(request.url);	
+                    response.writeHead(200, { 'Content-Type': 'text/html' });
+		    response.write("green: " + green + "<br />red: " + red)
+                    response.end(content, 'utf-8');
+		    
+                }
+            });
+        }
+        else {
+            response.writeHead(404);
+            response.end();
+        }
+    });
+     
 	
-	parseUrl(request.url);	
-	response.write("Red: " + red + " - Green: " + green);
-	response.end();  	
+	
 });
 
 
