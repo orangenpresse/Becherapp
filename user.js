@@ -27,8 +27,11 @@ function Green() {
 }
 
 function parseParams(request, user) {
-	if(user != null)
-		setStatus(request, user);
+	if(user.user != null)
+	    return setStatus(request, user.user);
+
+        user.user = new User();
+        return setStatus(request, user.user);
 };
 
 function setStatus(request, user) {
@@ -48,8 +51,3 @@ function setStatus(request, user) {
 }
 
 module.exports.parseParams = parseParams;
-module.exports.User = User;
-module.exports.White = White;
-module.exports.Red = Red;
-module.exports.Yellow = Yellow;
-module.exports.Green = Green;

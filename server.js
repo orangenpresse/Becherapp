@@ -58,7 +58,7 @@ function count(color) {
 	var number = 0;
 	
 	for( var i = 0; i < users.length; i++) {
-		if(users[i].user.status.color == color)
+		if(users[i].user != null && users[i].user.status.color == color)
 			number++;
 	}
 	
@@ -69,7 +69,7 @@ function getUser(request) {
 	//TODO session management
 	for( var i = 0; i < users.length; i++) {
 		if(users[i].socket == request.socket)
-			return users[i].user;
+			return users[i];
 	}
 	return null;
 }
@@ -78,7 +78,7 @@ http.on('connection', function(socket) {
 	//TODO session management
 	users.push({
 		"socket": socket,
-		user: new app.User(),
+		user: null,
 		time: new Date().getTime()
 	});
 });
