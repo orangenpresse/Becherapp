@@ -1,16 +1,13 @@
-<html>
-	<head>
-		<title>Bewertung</title>
-		<style type="text/css">
-			#happy { background-image: url(./smile_7.png);}
-		</style>
-	</head>
-	
-	<body>
-		
-		
-	<div class="emoticon"><img id="happy" src="./smile_7.png"/></div>
-	<div class="emoticon"><img id="neutral" src="./smile_1.png"/></div>
-	<div class="emoticon"><img id="unhappy" src="./smile_5.png"/></div>
-	</body>
-</html>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		window.setTimeout(update, 4000);
+	});
+
+	function update() {
+		location.reload();
+	}
+</script>	
+<a href="?status=stuck"><div class="emoticon">I'm Stuck</div></a>
+<a href="?status=hard"><div class="emoticon">It's getting harder</div></a>
+<a href="?status=good"><div class="emoticon">Everything is fine</div></a>

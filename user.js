@@ -74,6 +74,8 @@ function registerUser(reg) {
 	reg.session = sessionId;
 	users[sessionId] = new User(sessionId);
 	
+	console.log("New User:" + sessionId);
+	
 	return users[sessionId];
 }
 
