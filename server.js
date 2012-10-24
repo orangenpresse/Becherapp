@@ -28,7 +28,11 @@ http.on('request', function(request, response) {
 					response.writeHead(200, {
 						'Content-Type': 'text/html'
 					});
-					response.write("green: " + count("Green") + "<br />red: " + count("Red"))
+					response.write("Stuck: " + count("Stuck")
+						       + "<br />Hard: " + count("Hard")
+						       + "<br />Good: " + count("Good")
+						       + "<br /><br />Users: " + users.length
+						       );
 					response.end(content, 'utf-8');
 
 				}
@@ -54,11 +58,11 @@ function getFilePath(request) {
 }
 
 
-function count(color) {
+function count(status) {
 	var number = 0;
 	
 	for( var i = 0; i < users.length; i++) {
-		if(users[i].user != null && users[i].user.status.color == color)
+		if(users[i].user != null && users[i].user.status.value == status)
 			number++;
 	}
 	

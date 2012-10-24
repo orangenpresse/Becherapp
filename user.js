@@ -1,5 +1,5 @@
 function User() {
-	this.status = new White();
+	this.status = new None();
 	
 	this.setStatus = function(status) {
 		this.status = status;
@@ -10,20 +10,20 @@ function User() {
 	}
 }
 
-function White() {
-	this.color = "white";
+function None() {
+	this.value= "None";
 }
 
-function Red() {
-	this.color = "Red";
+function Stuck() {
+	this.value= "Stuck";
 }
 
-function Yellow() {
-	this.color = "Yellow";
+function Hard() {
+	this.value= "Hard";
 }
 
-function Green() {
-	this.color = "Green";
+function Good() {
+	this.value= "Good";
 }
 
 function parseParams(request, user) {
@@ -38,14 +38,14 @@ function setStatus(request, user) {
 	query = require('url').parse(request.url, true).query;
 	
 	switch (query.light) {
-		case "red":
-			user.setStatus(new Red());
+		case "stuck":
+			user.setStatus(new Stuck());
 			break;
-		case "yellow":
-			user.setStatus(new Yellow());
+		case "hard":
+			user.setStatus(new Hard());
 			break;
-		case "green":
-			user.setStatus(new Green());
+		case "good":
+			user.setStatus(new Good());
 			break;
 	}
 }
