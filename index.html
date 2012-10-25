@@ -1,22 +1,27 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		//window.setTimeout(update, 4000);
+		
 		var source = new EventSource('update-stream');
 		source.onmessage = function (event) {
-  		jQuery("#status").html(event.data);
+			jQuery("#status").html(event.data);
 		};
+		
+		source.onerror = function() {
+			jQuery("#serverstatus").html('<span style="background-color: rgb(255,0,0);">OFFLINE</span>');
+		}
+		
+		source.onopen = function() {
+			jQuery("#serverstatus").html('<span style="background-color: rgb(0,255,0);">ONLINE</span>');
+		}
 	});
-
-	function update() {
-		//location.reload();
-	}
 	
 	function setStatus(status) {
 		jQuery.get("?status=" + status);
 	}
 	
-</script>	
+</script>
+<div id="serverstatus"></div>
 <div class="emoticon" onclick="setStatus('stuck')" >I'm Stuck</div>
 <div class="emoticon" onclick="setStatus('hard')" >It's getting harder</div>
 <div class="emoticon" onclick="setStatus('good')" >Everything is fine</div>
