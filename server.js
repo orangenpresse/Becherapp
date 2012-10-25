@@ -6,6 +6,7 @@ var fs = require('fs');
 var app = express();
 
 var becher = require('./user.js');
+var becher = becher.becher();
 
 app.use(express.cookieParser());
 app.use(express.cookieSession({
@@ -13,8 +14,36 @@ app.use(express.cookieSession({
 	secret: new Date().getTime().toString()	
 }));
 
+var connections = [];
 
-app.get( /.*/,function(req, res) {
+app.get('/update-stream', function(req, res) {
+  // let request last as long as possible
+  req.socket.setTimeout(Infinity);
+
+  becher.addSSE(req, res);
+  
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  res.write('\n');
+
+  req.on("close", function() {
+	becher.closeSSE(res);
+	
+	var data = (
+		"Stuck: " + becher.count("stuck")
+		+ "<br />Hard: " + becher.count("hard")
+		+ "<br />Good: " + becher.count("good")
+		+ "<br /><br />Users: " + becher.count("users")
+	);
+	becher.sendDataToUsers(data);
+  });
+});
+
+app.get(/.*/,function(req, res) {
+	//TODO Template Engine
 	var filePath = getFilePath(req);
 	
 	fs.exists(filePath, function(exists) {
@@ -25,14 +54,19 @@ app.get( /.*/,function(req, res) {
 					res.send(500);
 				} else {
 					becher.parseParams(req);
+					
 					res.set('Content-Type', 'text/html');
 					
-					res.send("Stuck: " + becher.count("stuck")
+					var data = (
+						"Stuck: " + becher.count("stuck")
 						+ "<br />Hard: " + becher.count("hard")
 						+ "<br />Good: " + becher.count("good")
 						+ "<br /><br />Users: " + becher.count("users")
-						+ content
 						);
+					
+					res.send('<div id="status">' + data  + '</div>' + content);
+					
+					becher.sendDataToUsers('<div id="status">' + data  + '</div>');
 
 				}
 			});
