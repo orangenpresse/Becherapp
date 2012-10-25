@@ -12,7 +12,7 @@ npm install
 then you can start the Becherapp with
 ./server
 
-browser to
+browse to
 http://localhost:8080/
 
 enjoy :)
