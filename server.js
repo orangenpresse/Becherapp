@@ -11,29 +11,29 @@ var becher = becher.becher();
 app.use(express.cookieParser());
 app.use(express.cookieSession({
 	key: "becherapp",
-	secret: new Date().getTime().toString()	
+	secret: new Date().getTime().toString()
 }));
 
 app.use("/", express.static(__dirname + '/public'))
 
 app.get('/update-stream', function(req, res) {
-  req.socket.setTimeout(Infinity);
+	req.socket.setTimeout(Infinity);
 
-  becher.addSSE(req, res);
-  
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  res.write('\n');
+	becher.addSSE(req, res);
 
-  becher.sendDataToUsers();
-  
-  req.on("close", function() {
-	becher.closeSSE(res);
+	res.writeHead(200, {
+		'Content-Type': 'text/event-stream',
+		'Cache-Control': 'no-cache',
+		'Connection': 'keep-alive'
+	});
+	res.write('\n');
+
 	becher.sendDataToUsers();
-  });
+
+	req.on("close", function() {
+		becher.closeSSE(res);
+		becher.sendDataToUsers();
+	});
 });
 
 app.get('/update-status', function(req, res) {
@@ -43,5 +43,3 @@ app.get('/update-status', function(req, res) {
 });
 
 app.listen("8080");
-
-

@@ -7,33 +7,46 @@ const fiveSeconds = 5000;
  * User prototype
  */
 function User(sessionId) {
-	
-	this.sse = null;
+
+	this.sse = {};
 	this.sessionId = sessionId;
 	this.status = new None();
 	this.lastActivity = new Date().getTime();
 	this.active = true;
-	
+
 	this.sendData = function(id, data) {
-		if(this.sse != null) {
-			this.sse.write('id: ' + id + '\n'); 
-			this.sse.write('data: ' + data + '\n\n');
+		for (var i in this.sse) {
+			this.sse[i].write('id: ' + id + '\n');
+			this.sse[i].write('retry: ' + Math.random() * 10000 + '\n');
+			this.sse[i].write('data: ' + data + '\n\n');
 		}
 	}
-	
+
+	this.addSSE = function(sse) {
+		this.sse[Object.keys(this.sse).length.toString()] = sse;
+	}
+
+	this.closeSSE = function(res) {
+		for (var i in this.sse) {
+			if (this.sse[i] == res) delete this.sse[i];
+		}
+
+		if (Object.keys(this.sse).length <= 0) this.active = false;
+	}
+
 	this.setLastActivity = function() {
 		this.active = true;
 		this.lastActivity = new Date().getTime();
 	}
-	
+
 	this.getLastActivity = function() {
 		return this.lastActivity
 	}
-	
+
 	this.setStatus = function(status) {
 		this.status = status;
 	}
-	
+
 	this.getStatus = function(status) {
 		return this.status;
 	}
@@ -42,20 +55,25 @@ function User(sessionId) {
 /*
  * Status protoypes
  */
+
 function None() {
-	this.value= "none";
+	this.value = "none";
 }
 
 function Stuck() {
-	this.value= "stuck";
+	this.value = "stuck";
 }
 
 function Hard() {
-	this.value= "hard";
+	this.value = "hard";
 }
 
 function Good() {
-	this.value= "good";
+	this.value = "good";
+}
+
+function Observer() {
+	this.value = "observer";
 }
 
 function Becher() {
@@ -63,142 +81,149 @@ function Becher() {
 	 * holds users
 	 */
 	this.users = {};
-	
+
 	/*
 	 * Message Id
 	 */
 	this.messageId = 0;
-	
+
 	/*
 	* Checks if clients are active
 	*/
-       this.checkUsers = function(activeTime) {
-	       var timeNow = new Date().getTime();
-	       
-	       for( var user in this.users) {
-		       if(this.users[user].getLastActivity() < timeNow - activeTime)
-			       delete this.users[user];
-		       
-	       }
-       }
-       
-       /*
+	this.checkUsers = function(activeTime) {
+		var timeNow = new Date().getTime();
+
+		for (var user in this.users) {
+			if (this.users[user].getLastActivity() < timeNow - activeTime) delete this.users[user];
+
+		}
+	}
+
+	/*
 	* Registers User session
 	*/
-       this.registerUser = function(reg) {
-	       var sessionId = new Date().getTime().toString() + Object.keys(this.users).length.toString();
-	       reg.session = sessionId;
-	       this.users[sessionId] = new User(sessionId);
-	       
-	       console.log("New User:" + sessionId);
-	       
-	       return this.users[sessionId];
-       }
-       
-        /*
+	this.registerUser = function(reg) {
+		var sessionId = new Date().getTime().toString() + Object.keys(this.users).length.toString();
+		reg.session = sessionId;
+		this.users[sessionId] = new User(sessionId);
+
+		console.log("New User:" + sessionId);
+
+		return this.users[sessionId];
+	}
+
+	/*
 	* Gets the User by request
 	*/
-       this.getUser = function(req) {
-	       if(this.users[req.session] != undefined) {
-		       return this.users[req.session];
-	       }
-	       else {
-		       return this.registerUser(req);
-	       }
-       }
-       
-       
-       /*
-        * Adds Server Site Event to User
-        */
-       this.addSSE = function(req, res) {
+	this.getUser = function(req) {
+		if (this.users[req.session] != undefined) {
+			return this.users[req.session];
+		} else {
+			return this.registerUser(req);
+		}
+	}
+
+
+	/*
+	* Adds Server Site Event to User
+	*/
+	this.addSSE = function(req, res) {
 		var user = this.getUser(req);
-		user.sse = res;
+		user.addSSE(res);
 		user.setLastActivity();
-       }
-       
-       /*
-        * Remove SSE and User
-        */
-       this.closeSSE = function(res) {
-	       for( var user in this.users) {
-		       if(this.users[user].sse == res)
-			       this.users[user].active = false;
-	       }
-       }
-       
-       this.sendDataToUsers = function() {
-	 this.messageId++;
-	 for( var user in this.users) {
+	}
+
+	/*
+	* Remove SSExwxw
+	*/
+	this.closeSSE = function(res) {
+		for (var user in this.users) {
+			this.users[user].closeSSE(res);
+		}
+	}
+
+	this.sendDataToUsers = function() {
+		this.messageId++;
+		for (var user in this.users) {
 			this.users[user].sendData(this.messageId, JSON.stringify(this.getStatus()));
-	 }
-       }
-       
-       /*
+		}
+	}
+
+	/*
 	* Counts users or status
 	*/
 	this.count = function(value) {
 		var count = 0;
-	        if(value == "users") {
-		       for( var user in this.users) {
-				if(this.users[user].active)
-				count++;
-			}
-			
-			return count;
-	        }
-	       
-	        for( var user in this.users) {
-		       if(this.users[user].active && this.users[user].status.value == value)
-			       count++;
-	        }
-	       
-	       return count;
-       }
-       
-       /*
-        * Returns a Status Object
-        */
-       this.getStatus = function() {
-		return new Status(this.count("users"),this.count("stuck"), this.count("hard"), this.count("good"));	
-       }
-       
-       /*
+
+		for (var user in this.users) {
+			if (this.users[user].active && this.users[user].status.value == value) count++;
+		}
+
+		return count;
+	}
+
+
+	/*
+	* Counts active Users
+	*/
+	this.countUsers = function() {
+		var count = 0;
+
+		for (var user in this.users) {
+			if (this.users[user].active) count++;
+		}
+
+		return count;
+	}
+
+	/*
+	* Returns a Status Object
+	*/
+	this.getStatus = function() {
+		return new Status(
+		this.countUsers() - this.count("observer"), this.count("stuck"), this.count("hard"), this.count("good"));
+	}
+
+
+	/*
 	* Parses the request params and starts the logic
 	*/
-       this.parseParams = function(req) {
-	       var user = this.getUser(req);
-	       user.setLastActivity();
-	       
-	       // Vanish Time Feature
-	       //this.checkUsers(fiveSeconds);
-	       
-	       this.setStatus(req, user);
-       };
-       
-       /*
+	this.parseParams = function(req) {
+		var user = this.getUser(req);
+		user.setLastActivity();
+
+		// Vanish Time Feature
+		//this.checkUsers(fiveSeconds);
+		this.setStatus(req, user);
+	};
+
+	/*
 	* Sets the status by query.status
 	*/
-       this.setStatus = function (request, user) {
-	       query = require('url').parse(request.url, true).query;
-	       
-	       switch (query.status) {
-		       case "stuck":
-			       user.setStatus(new Stuck());
-			       break;
-		       case "hard":
-			       user.setStatus(new Hard());
-			       break;
-		       case "good":
-			       user.setStatus(new Good());
-			       break;
-	       }
-       }
+	this.setStatus = function(request, user) {
+		query = require('url').parse(request.url, true).query;
+
+		switch (query.status) {
+		case "stuck":
+			user.setStatus(new Stuck());
+			break;
+		case "hard":
+			user.setStatus(new Hard());
+			break;
+		case "good":
+			user.setStatus(new Good());
+			break;
+		case "observer":
+			user.setStatus(new Observer());
+			break;
+		}
+	}
 }
 
 /*
  * Status Object
  */
+
 function Status(users, stuck, hard, good) {
 	this.users = users;
 	this.stuck = stuck;
