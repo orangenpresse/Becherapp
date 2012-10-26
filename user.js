@@ -14,9 +14,11 @@ function User(sessionId) {
 	this.lastActivity = new Date().getTime();
 	this.active = true;
 	
-	this.sendData = function(data) {
-		if(this.sse != null)
-			this.sse.write('data: ' + data + '\n\n'); 
+	this.sendData = function(id, data) {
+		if(this.sse != null) {
+			this.sse.write('id: ' + id + '\n'); 
+			this.sse.write('data: ' + data + '\n\n');
+		}
 	}
 	
 	this.setLastActivity = function() {
@@ -61,6 +63,11 @@ function Becher() {
 	 * holds users
 	 */
 	this.users = {};
+	
+	/*
+	 * Message Id
+	 */
+	this.messageId = 0;
 	
 	/*
 	* Checks if clients are active
@@ -120,10 +127,11 @@ function Becher() {
 	       }
        }
        
-       this.sendDataToUsers = function(data) {
+       this.sendDataToUsers = function() {
+	 this.messageId++;
 	 for( var user in this.users) {
-			this.users[user].sendData(data);
-	       }
+			this.users[user].sendData(this.messageId, JSON.stringify(this.getStatus()));
+	 }
        }
        
        /*
@@ -146,6 +154,13 @@ function Becher() {
 	        }
 	       
 	       return count;
+       }
+       
+       /*
+        * Returns a Status Object
+        */
+       this.getStatus = function() {
+		return new Status(this.count("users"),this.count("stuck"), this.count("hard"), this.count("good"));	
        }
        
        /*
@@ -179,6 +194,16 @@ function Becher() {
 			       break;
 	       }
        }
+}
+
+/*
+ * Status Object
+ */
+function Status(users, stuck, hard, good) {
+	this.users = users;
+	this.stuck = stuck;
+	this.hard = hard;
+	this.good = good;
 }
 
 function becher() {

@@ -17,10 +17,11 @@
 	});
 	
 	function setStatus(status) {
-		jQuery.get("?status=" + status);
+		jQuery.get("/update-status?status=" + status);
 	}
 	
 </script>
+<div id="status"></div>
 <div id="serverstatus"></div>
 <div class="emoticon" onclick="setStatus('stuck')" >I'm Stuck</div>
 <div class="emoticon" onclick="setStatus('hard')" >It's getting harder</div>
