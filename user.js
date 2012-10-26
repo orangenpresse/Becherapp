@@ -1,9 +1,4 @@
 /*
- * 5 seconds in ms
- */
-const fiveSeconds = 5000;
-
-/*
  * User prototype
  */
 function User(sessionId) {
@@ -77,6 +72,8 @@ function Observer() {
 }
 
 function Becher() {
+	var self = this;
+	
 	/*
 	 * holds users
 	 */
@@ -93,10 +90,14 @@ function Becher() {
 	this.checkUsers = function(activeTime) {
 		var timeNow = new Date().getTime();
 
-		for (var user in this.users) {
-			if (this.users[user].getLastActivity() < timeNow - activeTime) delete this.users[user];
+		for (var user in self.users) {
+			if (self.users[user].getLastActivity() < timeNow - activeTime) {
+				self.users[user].setStatus(new None());
+			}
 
 		}
+		
+		self.sendDataToUsers();
 	}
 
 	/*
@@ -191,9 +192,7 @@ function Becher() {
 	this.parseParams = function(req) {
 		var user = this.getUser(req);
 		user.setLastActivity();
-
-		// Vanish Time Feature
-		//this.checkUsers(fiveSeconds);
+		
 		this.setStatus(req, user);
 	};
 

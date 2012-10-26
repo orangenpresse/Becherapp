@@ -15,6 +15,13 @@ app.use(express.cookieSession({
 }));
 
 app.use("/", express.static(__dirname + '/public'))
+app.use("/admin", express.basicAuth('username', 'password'));
+
+app.get('/admin', function(req, res) {
+	res.end();
+});
+
+setInterval(becher.checkUsers, 5000, 5000);
 
 app.get('/update-stream', function(req, res) {
 	req.socket.setTimeout(Infinity);
