@@ -91,7 +91,7 @@ function Becher() {
 		var timeNow = new Date().getTime();
 
 		for (var user in self.users) {
-			if (self.users[user].getLastActivity() < timeNow - activeTime) {
+			if (self.users[user].status.value != "observer"  && self.users[user].getLastActivity() < timeNow - activeTime) {
 				self.users[user].setStatus(new None());
 			}
 
