@@ -92,6 +92,7 @@ function Becher() {
 
 		for (var user in self.users) {
 			if (self.users[user].status.value != "observer"  && self.users[user].getLastActivity() < timeNow - activeTime) {
+				self.users[user].sendData(self.messageId, '{"decay":1}');
 				self.users[user].setStatus(new None());
 			}
 
