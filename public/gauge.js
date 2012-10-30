@@ -8,7 +8,10 @@ Ext.onReady(function() {
     var source = new EventSource('update-stream');
     source.onmessage = function(event) {
         data = JSON.parse(event.data);
-        store.loadData([data]);
+        if(data.decay == 1)
+		return;
+
+	store.loadData([data]);
         jQuery("#users").html("Users: " + data.users);
         updateGauges(data.users);
     };
